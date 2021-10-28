@@ -1,0 +1,162 @@
+%Matlab 
+
+%%Outlier check 
+HC_z = normalize(HC(:,9:28))
+sum(abs(HC_z>3))
+[I,J]=find(abs(HC_z>4))
+length(unique(I))%counts how many outliers 
+bad_idx_HC = unique(I) %singles out the outliers
+HC_fix = HC;
+HC_fix(bad_idx_HC,:)=[]; %removes outliers from datamat
+%check to make sure outliers were removed 
+size(HC_fix) 
+%vs 
+size(HC)
+[sig_HC,mu_HC,mah_HC,outlier_HC]=robustcov(HC(:,9:28))
+
+SMC_z = normalize(SMC(:,9:28));
+[I,J]=find(abs(SMC_z>4))
+length(unique(I))%counts how many outliers 
+bad_idx_SMC = unique(I) %singles out the outliers
+SMC_fix = SMC;
+SMC_fix(bad_idx_SMC,:)=[]; %removes outliers from datamat
+%check to make sure outliers were removed 
+size(SMC_fix) 
+%vs 
+size(SMC)
+[sig_SMC,mu_SMC,mah_SMC,outlier_SMC]=robustcov(SMC(:,9:28))
+
+EMCI_z = normalize(EMCI(:,9:28));
+[I,J]=find(abs(EMCI_z>4))
+length(unique(I))%counts how many outliers 
+bad_idx_EMCI = unique(I) %singles out the outliers
+EMCI_fix = EMCI;
+EMCI_fix(bad_idx_EMCI,:)=[]; %removes outliers from datamat
+%check to make sure outliers were removed 
+size(EMCI_fix) 
+%vs 
+size(EMCI)
+[sig_EMCI,mu_EMCI,mah_EMCI,outlier_EMCI]=robustcov(EMCI(:,9:28))
+
+LMCI_z = normalize(LMCI(:,9:28));
+[I,J]=find(abs(LMCI_z>4))
+length(unique(I))%counts how many outliers 
+bad_idx_LMCI = unique(I) %singles out the outliers
+LMCI_fix = LMCI;
+LMCI_fix(bad_idx_LMCI,:)=[]; %removes outliers from datamat
+%check to make sure outliers were removed 
+size(LMCI_fix) 
+%vs 
+size(LMCI)
+[sig_LMCI,mu_LMCI,mah_LMCI,outlier_LMCI]=robustcov(LMCI(:,9:28))
+
+MCI_outliers = [HC_fix;SMC_fix;EMCI_fix;LMCI_fix] %concatenate all of the new diagnosis group matrices
+
+%MEAN-CENTERED PLS
+clear option;
+option.method = 1;
+option.num_perm = 1000;
+option.num_boot = 1000;
+option.meancentering_type = 0;
+
+%MC-PLS across all diagnostic groups 
+A = zscore(MCI_outliers_demos(:,3:30)); 
+grp100 = MCI_outliers_demos(:,2);
+
+for i=1:4  
+    idx=find(grp1(:,1)==i); 
+    datamat1{i}=A(idx,1:28); 
+    num_subj1(i)=length(datamat1{i}); 
+end
+ 
+res_everything_no_outliers = pls_analysis(datamat1,num_subj1,1,option) %running PLS 
+
+res_everything_no_outliers.perm_result.sprob %p-values 
+
+pC_no_outliers1=res_everything_no_outliers.s(1)^2/sum(res_everything_no_outliers.s.^2)*100 %first LV
+pC_no_outliers2=res_everything_no_outliers.s(2)^2/sum(res_everything_no_outliers.s.^2)*100 %second LV
+
+%MC-PLS HC, SMC, EMCI
+B = zscore(MCI_outliers_demos(1:380,3:30));
+
+for i=1:3  
+    idx=find(grp2(:,1)==i); 
+    datamat2{i}=B(idx,1:28); 
+    num_subj2(i)=length(datamat2{i}); 
+end
+
+noLMCI_no_outliers_demos = pls_analysis(datamat2,num_subj2,1,option) %running PLS 
+
+noLMCI_no_outliers_demos.perm_result.sprob %p-value
+
+noLMCI_no_outliers_demos.s(1)^2/sum(noLMCI_no_outliers_demos.s.^2)*100 %first LV
+noLMCI_no_outliers_demos.s(2)^2/sum(noLMCI_no_outliers_demos.s.^2)*100 %second LV
+
+%MC-PLS HC and SMC
+C = zscore(MCI_outliers_demos(1:251,3:30)); %dep_vars = risk factor scores matrix 
+
+for i=1:2  
+    idx=find(grp3(:,1)==i); 
+    datamat3{i}=C(idx,1:28); 
+    num_subj3(i)=length(datamat3{i}); 
+end
+
+noMCI_no_outliers_demos = pls_analysis(datamat3,num_subj3,1,option) %running PLS 
+
+noMCI_no_outliers_demos.perm_result.sprob %p-values
+
+%MC-PLS SMC and EMCI 
+D = zscore(MCI_outliers_demos(134:380,3:30)); 
+
+for i=2:3  
+    idx=find(grp4(:,1)==i); 
+    datamat4{i}= D(idx,1:28); 
+    num_subj4(i)=length(datamat4{i}); 
+end
+
+SMCEMCI_no_outliers_demos=pls_analysis(datamat4,num_subj4,1,option); %running PLS 
+
+SMCEMCI_no_outliers.perm_result.sprob %p-values 
+
+%MC-PLS EMCI and LMCI 
+E = zscore(MCI_outliers_demos(252:506,3:30)); 
+for i=3:4  
+    idx=find(grp5(:,1)==i); 
+    datamat5{i}=E(idx,1:28); 
+    num_subj5(i)=length(datamat5{i}); 
+end
+
+MCI_no_outliers_demos = pls_analysis(datamat5,num_subj5,1,option); %running PLS 
+
+MCI_no_outliers_demos.perm_result.sprob %p-values
+
+%DOT PRODUCTS OF THE MC-PLS 
+res_everything_no_outliers.u'*noLMCI_no_outliers_demos.u %(i)
+res_everything_no_outliers.u'*noMCI_no_outliers_demos.u %(ii)
+res_everything_no_outliers.u'*SMCEMCI_no_outliers_demos.u %(iii)
+res_everything_no_outliers.u'*MCI_no_outliers_demos.u %(iv)
+
+%BEHAVIOURAL PLS 
+num_cond = 1; 
+behavmat1 = MCI_outliers_demos(:,5:7); %calling the CSF concentrations 
+clear option;
+option.method = 3; %note the different option.method from mean-centered PLS 
+option.num_perm = 1000;
+option.num_boot = 1000;
+option.meancentering_type = 0;
+option.stacked_behavdata = behavmat1; 
+
+F = zscore(MCI_outliers_demos(:,[3:4 8:30])); 
+
+for i=1:4 
+    idx=find(grp1(:,1)==i); 
+    datamat6{i}=F(idx,1:25); 
+    num_subj6(i)=length(datamat6{i});
+end
+
+res_behav_no_outliers_demos = pls_analysis(datamat6, num_subj6, num_cond, option); %running PLS 
+
+res_behav_no_outliers_demos.perm_result.sprob %p-values 
+
+res_behav_no_outliers_demos.s(1)^2/sum(res_behav_no_outliers_demos.s.^2)*100 %first LV
+res_behav_no_outliers_demos.s(2)^2/sum(res_behav_no_outliers_demos.s.^2)*100 %second LV 
