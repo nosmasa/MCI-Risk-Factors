@@ -1,0 +1,164 @@
+#Code completed in R script
+
+MCI <-read_excel("AD_Risk_Factors.xlsx",sheet="no_outliers")
+
+count(MCI$Sex)
+
+sex <- table(MCI$Sex,MCI$Diagnosis)
+prop.table(sex,2)
+chisq.test(sex)
+chisq.posthoc.test(sex)
+
+Male <- data.frame(filter(MCI,Sex==1))
+Female <-data.frame(filter(MCI,Sex==2))
+
+
+t.test(Male$Diagnosis,Female$Diagnosis,paired=F)
+
+HC <- data.frame(filter(MCI,Diagnosis==1))
+SMC <- data.frame(filter(MCI,Diagnosis==2))
+EMCI <- data.frame(filter(MCI,Diagnosis==3))
+LMCI <- data.frame(filter(MCI,Diagnosis==4))
+
+aggregate(Age~as.factor(Diagnosis),MCI,mean)
+aggregate(Age~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$Age~as.factor(MCI$Diagnosis)))
+TukeyHSD(aov(lm(Age~as.factor(Diagnosis),MCI)))
+
+aggregate(Education~as.factor(Diagnosis),MCI,mean)
+aggregate(Education~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$Education~as.factor(MCI$Diagnosis)))
+TukeyHSD(aov(lm(Education~as.factor(Diagnosis),MCI)))
+
+ms <- table(MCI$MS,MCI$Diagnosis)
+prop.table(ms,2)
+chisq.test(ms)
+
+eth <- table(MCI$Eth,MCI$Diagnosis)
+prop.table(eth,2)
+chisq.test(eth)
+
+race <- table(MCI$Race,MCI$Diagnosis)
+prop.table(race,2)*100
+chisq.test(race)
+
+#APOE_no outliers----
+MCI$APOE4 <- as.factor(MCI$APOE4)
+apoe <- table(MCI$APOE4,MCI$Diagnosis)
+chisq.test(apoe)
+chisq.posthoc.test(apoe)
+prop.table(apoe,2)*100
+
+MCI$APOE <- as.factor(MCI$APOE)
+apoe <- table(MCI$APOE,MCI$Diagnosis)
+chisq.test(apoe)
+chisq.posthoc.test(apoe)
+
+prop.table(apoe,2)*100
+
+
+#CSF_no outliers-----
+aggregate(Ab42~as.factor(Diagnosis),MCI,mean)
+aggregate(Ab42~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$Ab42~as.factor(MCI$Diagnosis)))
+
+aggregate(ptau~as.factor(Diagnosis),MCI,mean)
+aggregate(ptau~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$ptau~as.factor(MCI$Diagnosis)))
+
+aggregate(ttau~as.factor(Diagnosis),MCI,mean)
+aggregate(ttau~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$ttau~as.factor(MCI$Diagnosis)))
+
+MCI1 <- MCI %>%
+  mutate(Ab42 = case_when(
+    Ab42>980 ~'healthy',
+    Ab42<=980~ 'presumed pathology'))
+
+Ab <- table(MCI1$Diagnosis,MCI1$Ab42)
+prop.table(Ab,1)*100 #percent per group 
+
+chisq.test(Ab)
+
+MCI1 <- MCI %>%
+  mutate(ptau = case_when(
+    ptau<21.8 ~'healthy',
+    ptau>=21.8~ 'presumed pathology'))
+
+ptau <-table(MCI1$Diagnosis,MCI1$ptau)
+prop.table(ptau,1)*100
+
+chisq.test(ptau)
+
+MCI1 <- MCI %>%
+  mutate(ttau = case_when(
+    ttau<245 ~'healthy',
+    ttau>=245~ 'presumed pathology'))
+
+tau <-table(MCI1$Diagnosis,MCI1$ttau)
+prop.table(tau,1)*100
+
+chisq.test(tau) 
+
+#Assessments_no outliers ----
+
+aggregate(ADAS~as.factor(Diagnosis),MCI,mean)
+aggregate(ADAS~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$ADAS~as.factor(MCI$Diagnosis)))
+
+aggregate(MoCA~as.factor(Diagnosis),MCI,mean)
+aggregate(MoCA~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$MoCA~as.factor(MCI$Diagnosis)))
+
+aggregate(MMSE~as.factor(Diagnosis),MCI,mean)
+aggregate(MMSE~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$MMSE~as.factor(MCI$Diagnosis)))
+
+aggregate(TMA~as.factor(Diagnosis),MCI,mean)
+aggregate(TMA~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$TMA~as.factor(MCI$Diagnosis)))
+
+aggregate(TMB~as.factor(Diagnosis),MCI,mean)
+aggregate(TMB~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$TMB~as.factor(MCI$Diagnosis)))
+
+aggregate(sumRAVLT~as.factor(Diagnosis),MCI,mean)
+aggregate(sumRAVLT~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$sumRAVLT~as.factor(MCI$Diagnosis)))
+
+aggregate(CF~as.factor(Diagnosis),MCI,mean)
+aggregate(CF~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$CF~as.factor(MCI$Diagnosis)))
+
+aggregate(Imm~as.factor(Diagnosis),MCI,mean)
+aggregate(Imm~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$Imm~as.factor(MCI$Diagnosis)))
+
+aggregate(Del~as.factor(Diagnosis),MCI,mean)
+aggregate(Del~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$Del~as.factor(MCI$Diagnosis)))
+
+aggregate(FAQ~as.factor(Diagnosis),MCI,mean)
+aggregate(FAQ~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$FAQ~as.factor(MCI$Diagnosis)))
+
+aggregate(NPI~as.factor(Diagnosis),MCI,mean)
+aggregate(NPI~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$NPI~as.factor(MCI$Diagnosis)))
+
+aggregate(GDS~as.factor(Diagnosis),MCI,mean)
+aggregate(GDS~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$GDS~as.factor(MCI$Diagnosis)))
+
+#Vascular Measures_no outliers----
+aggregate(SysBP~as.factor(Diagnosis),MCI,mean)
+aggregate(SysBP~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$SysBP~as.factor(MCI$Diagnosis)))
+
+aggregate(DiaBP~as.factor(Diagnosis),MCI,mean)
+aggregate(DiaBP~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$DiaBP~as.factor(MCI$Diagnosis)))
+
+aggregate(BMI~as.factor(Diagnosis),MCI,mean)
+aggregate(BMI~as.factor(Diagnosis),MCI,sd)
+anova(lm(MCI$BMI~as.factor(MCI$Diagnosis)))
